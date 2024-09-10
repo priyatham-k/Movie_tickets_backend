@@ -1,0 +1,14 @@
+# Node.js specific
+node_modules/
+dist/
+npm-debug.log
+
+# VS Code specific
+.vscode/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
