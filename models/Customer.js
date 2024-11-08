@@ -1,18 +1,29 @@
-// backend/models/Customer.js
+const mongoose = require("mongoose");
 
-const mongoose = require('mongoose');
 const customerSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
   bookings: [
     {
-      theatre: { type: mongoose.Schema.Types.ObjectId, ref: 'Theatre' },
-      movie: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie' },
-      date: { type: Date, required: true },
-      seats: { type: Number, required: true },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Booking",
     },
   ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model('Customer', customerSchema);
+const Customer = mongoose.model("Customer", customerSchema);
+
+module.exports = Customer;
