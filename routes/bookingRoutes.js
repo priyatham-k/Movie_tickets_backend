@@ -98,12 +98,18 @@ router.delete("/bookings/:id", async (req, res) => {
   }
 });
 
-// routes/bookingRoutes.js
 router.get("/customer/:customerId", async (req, res) => {
   const { customerId } = req.params;
   try {
     const bookings = await Booking.find({ customerId })
-      .populate("movieId", "title genre screenNumber imageUrl") // Populate movie details
+      .populate({
+        path: "movieId",
+        select: "title genre screen imageUrl",
+        populate: [
+          { path: "genre", select: "name" }, // Populate genre details
+          { path: "screen", select: "screenNumber capacity" }, // Populate screen details
+        ],
+      })
       .exec();
 
     const formattedBookings = bookings.map((booking) => ({
@@ -111,28 +117,31 @@ router.get("/customer/:customerId", async (req, res) => {
       movie: booking.movieId
         ? {
             title: booking.movieId.title,
-            genre: booking.movieId.genre,
-            screenNumber: booking.movieId.screenNumber,
+            genre: booking.movieId.genre?.name || null, // Include genre name
+            screen: booking.movieId.screen
+              ? {
+                  screenNumber: booking.movieId.screen.screenNumber,
+                  capacity: booking.movieId.screen.capacity,
+                }
+              : null, // Handle missing screen gracefully
             imageUrl: booking.movieId.imageUrl,
           }
         : null, // Handle missing movieId gracefully
       timeSlot: booking.timeSlot,
       seatsBooked: booking.seatsBooked,
       status: booking.status,
-      date:booking.date
+      date: booking.date,
     }));
 
     res.status(200).json(formattedBookings);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Failed to fetch customer bookings",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Failed to fetch customer bookings",
+      error: error.message,
+    });
   }
 });
-// routes/bookingRoutes.js
+
 
 // Endpoint to mark a booking as canceled
 router.put("/bookings/:id/cancel", async (req, res) => {
