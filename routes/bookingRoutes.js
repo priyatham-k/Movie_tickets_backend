@@ -6,7 +6,11 @@ const Movie = require("../models/Movie");
 // Route to get all movies with available screens and time slots
 router.get("/movies", async (req, res) => {
   try {
-    const movies = await Movie.find();
+    // Fetch movies and populate genre and screen details
+    const movies = await Movie.find()
+      .populate('genre', 'name') // Populate genre name
+      .populate('screen', 'screenNumber capacity'); // Populate screen details
+
     res.status(200).json(movies);
   } catch (error) {
     res
@@ -14,6 +18,7 @@ router.get("/movies", async (req, res) => {
       .json({ message: "Failed to fetch movies", error: error.message });
   }
 });
+
 
 // Route to get booked seats for a specific movie and time slot
 router.get("/bookings/:movieId/:timeSlot", async (req, res) => {
@@ -223,11 +228,14 @@ router.get("/movies-with-availability/:date", async (req, res) => {
 });
 router.get('/movies/with-available-seats', async (req, res) => {
   try {
-    const movies = await Movie.find();
+    // Fetch movies and populate the genre and screen fields
+    const movies = await Movie.find()
+      .populate('genre', 'name') // Populate the genre field with its name
+      .populate('screen', 'screenNumber capacity'); // Populate the screen field with screenNumber and capacity
 
     const moviesWithAvailableSeats = await Promise.all(
       movies.map(async (movie) => {
-        // For each time slot, find booked seats
+        // For each time slot, calculate available seats
         const timeSlotAvailableSeats = {};
 
         for (const slot of movie.timeSlots) {
@@ -238,13 +246,15 @@ router.get('/movies/with-available-seats', async (req, res) => {
           });
 
           const bookedSeats = bookings.flatMap((booking) => booking.seatsBooked);
-          const availableSeats = 25 - bookedSeats.length; // Assuming 25 seats per movie
+          const availableSeats = movie.screen.capacity - bookedSeats.length; // Use screen capacity to calculate available seats
 
           timeSlotAvailableSeats[slot] = availableSeats;
         }
 
         return {
           ...movie.toObject(),
+          genre: movie.genre.name, // Include the genre name instead of ObjectId
+          screen: movie.screen, // Include the screen object
           availableSeats: timeSlotAvailableSeats,
         };
       })
@@ -252,7 +262,12 @@ router.get('/movies/with-available-seats', async (req, res) => {
 
     res.status(200).json(moviesWithAvailableSeats);
   } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch movies with available seats', error: error.message });
+    res.status(500).json({
+      message: 'Failed to fetch movies with available seats',
+      error: error.message,
+    });
   }
 });
+
+
 module.exports = router;

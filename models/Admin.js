@@ -19,7 +19,7 @@ const adminSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["admin"],
+    enum: ["admin"], // Restrict role to only "admin"
     default: "admin",
   },
   createdAt: {
