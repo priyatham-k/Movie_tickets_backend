@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Booking = require("../models/Booking");
 const Movie = require("../models/Movie");
-const Schedule = require("../models/Schedule");
+const Schedule = require("../models/Schedule");const Screen = require("../models/Screen");
 // Route to get all movies with available screens and time slots
 router.get("/movies", async (req, res) => {
   try {
@@ -359,6 +359,51 @@ router.get('/movies/with-available-seats', async (req, res) => {
   }
 });
 
+router.post("/check-seat-status", async (req, res) => {
+  const { screenNumber, date, timeSlot, seatId } = req.body;
 
+  try {
+    // Validate inputs
+    if (!screenNumber || !date || !timeSlot || !seatId) {
+      return res.status(400).json({ message: "All fields are required." });
+    }
+
+    // Step 1: Find the screen with the given screen number
+    const screen = await Screen.findOne({ screenNumber: parseInt(screenNumber, 10) });
+    if (!screen) {
+      return res.status(404).json({ status: "Screen not found." });
+    }
+
+    // Step 2: Find the movie associated with the screen
+    const movie = await Movie.findOne({ screen: screen._id });
+    if (!movie) {
+      return res.status(404).json({ status: "No movie found for the screen." });
+    }
+
+    // Step 3: Find the booking for the movie, date, time slot, and seat ID
+    const booking = await Booking.findOne({
+      movieId: movie._id,
+      date: new Date(date),
+      timeSlot,
+      "seatsBooked.seatId": seatId,
+    });
+
+    if (!booking) {
+      return res.status(404).json({ status: "Seat not found or available." });
+    }
+
+    // Step 4: Extract seat information from the booking
+    const seat = booking.seatsBooked.find((seat) => seat.seatId === seatId);
+    console.log(seat)
+    if (!seat) {
+      return res.status(404).json({ status: "Seat not found in the booking." });
+    }
+
+    res.status(200).json({ seatNumber:seat.seatNumber,status: `Seat is ${seat.status}` });
+  } catch (error) {
+    console.error("Error checking seat status:", error);
+    res.status(500).json({ message: "Failed to check seat status", error: error.message });
+  }
+});
 
 module.exports = router;
