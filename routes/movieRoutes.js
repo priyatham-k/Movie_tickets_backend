@@ -3,8 +3,8 @@ const router = express.Router();
 const Movie = require('../models/Movie');
 const Genre = require('../models/Genre');
 const Screen = require('../models/Screen');
+const mongoose = require("mongoose");
 
-// Add a new movie
 router.post('/add', async (req, res) => {
   try {
     const {
@@ -138,7 +138,6 @@ router.put('/edit/:id', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 
 
 

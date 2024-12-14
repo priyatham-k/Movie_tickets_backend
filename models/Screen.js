@@ -9,7 +9,7 @@ const screenSchema = new mongoose.Schema({
   capacity: {
     type: Number,
     required: true,
-    default: 25,
+    default: 100,
   },
   description: {
     type: String,

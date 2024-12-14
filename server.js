@@ -6,7 +6,9 @@ const customerRoutes = require("./routes/customerRoutes"); // Adjust the path as
 const adminRoutes = require("./routes/adminRoutes");
 const movieRoutes = require("./routes/movieRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
-const screenRoutes = require("./routes/screenRoutes");const paymentRoutes = require('./routes/paymentRoutes');
+const scheduleRoutes = require("./routes/scheduleRoutes");
+const screenRoutes = require("./routes/screenRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 const app = express();
 
 // Middleware
@@ -37,11 +39,14 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/movieRoutes", movieRoutes);
 app.use("/api/screenRoutes", screenRoutes);
 app.use("/api", bookingRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/schedule", scheduleRoutes);
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
   if (err.type === "entity.too.large") {
-    res.status(413).send({ message: "Payload too large. Please reduce the size." });
+    res
+      .status(413)
+      .send({ message: "Payload too large. Please reduce the size." });
   } else {
     console.error("Unhandled Error:", err.message);
     res.status(500).send({ message: "Internal Server Error" });

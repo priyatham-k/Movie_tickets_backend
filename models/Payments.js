@@ -11,10 +11,12 @@ const paymentSchema = new mongoose.Schema({
     ref: 'Movie',
     required: true,
   },
-  seatsBooked: {
-    type: [String], // Array of seat numbers
-    required: true,
-  },
+  seatsBooked: [
+    {
+      seatNumber: { type: String, required: true },
+      seatId: { type: String, required: true },
+    },
+  ],
   timeSlot: {
     type: String,
     required: true,
@@ -24,6 +26,7 @@ const paymentSchema = new mongoose.Schema({
     required: true,
   },
   paymentDetails: {
+    cardHolder: { type: String, required: true },
     creditCard: { type: String, required: true },
     expiry: { type: String, required: true },
     cvv: { type: String, required: true },
